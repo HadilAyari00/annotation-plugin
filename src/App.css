@@ -1,5 +1,11 @@
 .App {
   text-align: center;
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  width: 300px;
 }
 
 .App-logo {
@@ -15,17 +21,63 @@
 
 .App-header {
   background-color: #282c34;
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
 }
 
 .App-link {
   color: #61dafb;
+}
+
+.selected-content {
+  margin-bottom: 15px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.selected-content img {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.select-page-button,
+.submit-button {
+  width: 100%;
+  background-color: #4caf50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.select-page-button:hover,
+.submit-button:hover {
+  background-color: #45a049;
+}
+
+textarea {
+  height: 100px;
 }
 
 @keyframes App-logo-spin {
@@ -35,4 +87,28 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.selected-contexts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.selected-context {
+  padding: 5px 10px;
+  background-color: #406191;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.remove-context {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #333;
+  font-weight: bold;
 }
