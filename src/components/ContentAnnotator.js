@@ -4,106 +4,105 @@ import Configuration from "./Configuration";
 import CampaignOptions from "./CampaignOptions";
 import React, { useState, useEffect } from "react";
 import AsyncSelect from "react-select/async";
+import thesaurusData from "../data/thesaurus.json";
+import { addAnnotation } from "../Server/addDoc";
 
-function ContentAnnotator() {
+function ContentAnnotator({ campaign, onReturnToCampaignOptions }) {
   const [item, setItem] = useState({ type: null, value: "" });
   const [annotationType, setAnnotationType] = useState("comment");
   const [concepts, setConcepts] = useState([]);
   const [description, setDescription] = useState("");
-  const [sources, setSources] = useState([
-    {
-      name: "DBpedia",
-      endpoint: "https://dbpedia.org/sparql",
-      query: `
-        SELECT DISTINCT ?label WHERE {
-          ?s rdfs:label ?label .
-          FILTER (langMatches(lang(?label), "EN") && contains(lcase(str(?label)), "{keyword}"))
-        } LIMIT 5
-      `,
-    },
-  ]);
+  const [pageUrl, setPageUrl] = useState("");
 
   /* global chrome */
 
   useEffect(() => {
+    // Get the selected data from the content script
     chrome.runtime.sendMessage({ request: "getSelectedData" }, (response) => {
       if (response) {
         setItem(response);
       }
     });
-    const savedSources = JSON.parse(localStorage.getItem("userSources"));
-    if (savedSources && savedSources.length > 0) {
-      setSources((prevSources) => [...prevSources, ...savedSources]);
-    }
+
+    // Get the current tab's URL
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      const currentTab = tabs[0];
+      if (currentTab && currentTab.url) {
+        setPageUrl(currentTab.url);
+      }
+    });
   }, []);
 
-  const handleSourcesChanged = (updatedSources) => {
-    const userSources = updatedSources.filter(
-      (source) => source.name !== "DBpedia"
-    );
-    localStorage.setItem("userSources", JSON.stringify(userSources));
-
-    setSources(updatedSources);
-  };
-
-  const selectWholePage = () => {
-    setItem({ type: null, value: "" });
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        function: selectBodyContent,
-      });
-    });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ item, annotationType, concepts, description });
-    saveAnnotation();
+
+    if (!annotationType || !description.trim() || !item.value.trim()) {
+      window.alert(
+        "Please select an annotation type, enter a description, and select an item."
+      );
+      return;
+    }
+
+    const username = localStorage.getItem("username");
+
+    const annotationData = {
+      Author: username,
+      Agent: "Web Page",
+      item,
+      annotationType,
+      concepts: concepts.map((c) => c.value),
+      description,
+      pageUrl: pageUrl,
+      date: new Date().toISOString(),
+      campaignId: campaign.id,
+    };
+
+    try {
+      await addAnnotation(annotationData);
+      window.alert("Annotation saved successfully!");
+
+      setAnnotationType("comment");
+      setDescription("");
+      setConcepts([]);
+      setItem({ type: null, value: "" });
+    } catch (error) {
+      console.error("Error adding annotation:", error);
+      window.alert("Failed to save annotation.");
+    }
   };
 
   const loadOptions = async (inputValue, callback) => {
     if (!inputValue) return callback([]);
 
-    const fetchDbpedia = async (inputValue) => {
-      const query = `
-        SELECT DISTINCT ?label WHERE {
-          ?s rdfs:label ?label .
-          FILTER (langMatches(lang(?label), "EN") && contains(lcase(str(?label)), "${inputValue.toLowerCase()}"))
-        } LIMIT 5
-      `;
-      const url = `https://dbpedia.org/sparql?query=${encodeURIComponent(
-        query
-      )}&format=json`;
-      const response = await fetch(url);
-      const data = await response.json();
-      return data.results.bindings.map((item) => ({
-        value: item.label.value,
-        label: `[DBpedia] ${item.label.value}`,
-      }));
-    };
+    const selectedThesauriData = thesaurusData.filter((thesaurus) =>
+      campaign.selectedThesauri.includes(thesaurus.name)
+    );
 
-    const fetchSimpleApi = async (inputValue) => {
+    const fetchOptionsFromThesaurus = async (thesaurus, keyword) => {
+      const query = thesaurus.query.replace("{keyword}", keyword.toLowerCase());
       const response = await fetch(
-        `https://api.datamuse.com/words?rel_syn=${inputValue}`
+        `${thesaurus.endpoint}?query=${encodeURIComponent(query)}&format=json`
       );
       const data = await response.json();
-      return data.map((item) => ({
-        value: item.word,
-        label: `[API] ${item.word}`,
-      }));
+
+      return data.results.bindings.map((binding) => {
+        const label = binding.label || binding.itemLabel || binding.subject;
+        return {
+          value: label.value,
+          label: `[${thesaurus.name}] ${label.value}`,
+        };
+      });
     };
 
     try {
-      const [apiResults, dbpediaResults] = await Promise.all([
-        fetchSimpleApi(inputValue),
-        fetchDbpedia(inputValue),
-      ]);
-
-      const combinedOptions = [...apiResults, ...dbpediaResults];
+      const promises = selectedThesauriData.map((thesaurus) =>
+        fetchOptionsFromThesaurus(thesaurus, inputValue)
+      );
+      const results = await Promise.all(promises);
+      const combinedOptions = results.flat();
       callback(combinedOptions);
     } catch (error) {
-      console.error("Error fetching data: ", error);
+      console.error("Error fetching data from thesauri: ", error);
       callback([]);
     }
   };
@@ -112,32 +111,6 @@ function ContentAnnotator() {
     return `annotation-${new Date().getTime()}-${Math.random()
       .toString(36)
       .substr(2, 9)}`;
-  };
-
-  const saveAnnotation = () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      const pageUrl = tabs[0].url; // Gets the URL of the current tab
-
-      const annotationId = generateAnnotationId();
-      const annotation = {
-        id: annotationId,
-        Author: "",
-        Agent: "Web Page",
-        item,
-        annotationType,
-        concepts: concepts.map((c) => c.value),
-        description,
-        pageUrl,
-        date: new Date().toISOString(),
-      };
-
-      const annotations = JSON.parse(localStorage.getItem("annotations")) || [];
-      annotations.push(annotation);
-
-      localStorage.setItem("annotations", JSON.stringify(annotations));
-
-      console.log("Annotation saved:", annotation);
-    });
   };
 
   const handleConceptsChange = (selectedOption) => {
@@ -153,14 +126,16 @@ function ContentAnnotator() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Content Annotator</h1>
+        <div className="content-annotator-header">
+          <button className="return-icon" onClick={onReturnToCampaignOptions}>
+            ←
+          </button>
+          <h1>{campaign?.name}</h1>
+        </div>
         <div className="selected-content">
           {item.type === "text" && <p>Selected Text: {item.value}</p>}
           {item.type === "image" && <img src={item.value} alt="Selected" />}
         </div>
-        <button onClick={selectWholePage} className="select-page-button">
-          Select Whole Page
-        </button>
 
         <form onSubmit={handleSubmit} className="annotation-form">
           <label>
@@ -225,11 +200,6 @@ function ContentAnnotator() {
       </header>
     </div>
   );
-}
-
-function selectBodyContent() {
-  const bodyContent = document.body.innerHTML;
-  chrome.runtime.sendMessage({ type: "page", value: bodyContent });
 }
 
 export default ContentAnnotator;

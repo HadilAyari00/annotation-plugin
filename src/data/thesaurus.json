@@ -1,0 +1,18 @@
+[
+    {
+      "name": "DBpedia",
+      "endpoint": "https://dbpedia.org/sparql",
+      "query": "SELECT DISTINCT ?label WHERE {?s rdfs:label ?label . FILTER (langMatches(lang(?label), \"EN\") && contains(lcase(str(?label)), \"{keyword}\"))} LIMIT 10"
+    },
+    {
+      "name": "Wikidata",
+      "endpoint": "https://query.wikidata.org/sparql",
+      "query": "SELECT ?item ?itemLabel WHERE { ?item ?label \"{keyword}\"@en. SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". } } LIMIT 10"
+    },
+    {
+      "name": "YAGO",
+      "endpoint": "https://yago-knowledge.org/sparql/query",
+      "query": "SELECT ?subject ?label WHERE { ?subject rdfs:label ?label . FILTER(regex(str(?label), \"{keyword}\", \"i\") && langMatches(lang(?label), \"EN\")) } LIMIT 10"
+    }
+  ]
+  
