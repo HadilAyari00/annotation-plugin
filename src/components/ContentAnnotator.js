@@ -1,11 +1,11 @@
 import "../App.css";
-import SourceManager from "./SourceManager";
-import Configuration from "./Configuration";
-import CampaignOptions from "./CampaignOptions";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye } from "@fortawesome/free-solid-svg-icons";
 import React, { useState, useEffect } from "react";
 import AsyncSelect from "react-select/async";
 import thesaurusData from "../data/thesaurus.json";
 import { addAnnotation } from "../Server/addDoc";
+import { fetchAnnotationsByCampaignId } from "../Server/readDoc";
 
 function ContentAnnotator({ campaign, onReturnToCampaignOptions }) {
   const [item, setItem] = useState({ type: null, value: "" });
@@ -13,6 +13,8 @@ function ContentAnnotator({ campaign, onReturnToCampaignOptions }) {
   const [concepts, setConcepts] = useState([]);
   const [description, setDescription] = useState("");
   const [pageUrl, setPageUrl] = useState("");
+  const [showAnnotations, setShowAnnotations] = useState(false);
+  const [annotations, setAnnotations] = useState([]);
 
   /* global chrome */
 
@@ -50,7 +52,7 @@ function ContentAnnotator({ campaign, onReturnToCampaignOptions }) {
       Agent: "Web Page",
       item,
       annotationType,
-      concepts: concepts.map((c) => c.value),
+      concepts: concepts.map((c) => ({ value: c.value, uri: c.uri })), // include URIs
       description,
       pageUrl: pageUrl,
       date: new Date().toISOString(),
@@ -86,10 +88,40 @@ function ContentAnnotator({ campaign, onReturnToCampaignOptions }) {
       const data = await response.json();
 
       return data.results.bindings.map((binding) => {
-        const label = binding.label || binding.itemLabel || binding.subject;
+        let label = "No label found";
+        let uri = "link not found";
+
+        if (thesaurus.name === "DBpedia") {
+          if (binding.label) {
+            label = binding.label.value;
+          }
+          if (binding.s) {
+            uri = binding.s.value;
+          }
+        } else if (thesaurus.name === "Wikidata") {
+          label = binding.itemDescription
+            ? binding.itemDescription.value
+            : binding.itemLabel
+            ? binding.itemLabel.value
+            : "No label found";
+          if (binding.item) {
+            uri = binding.item.value;
+          }
+        } else {
+          if (binding.label) {
+            label = binding.label.value;
+          }
+          if (binding.item) {
+            uri = binding.item.value;
+          } else if (binding.subject) {
+            uri = binding.subject.value;
+          }
+        }
+
         return {
-          value: label.value,
-          label: `[${thesaurus.name}] ${label.value}`,
+          value: label,
+          label: `[${thesaurus.name}] ${label}`,
+          uri: uri,
         };
       });
     };
@@ -107,12 +139,6 @@ function ContentAnnotator({ campaign, onReturnToCampaignOptions }) {
     }
   };
 
-  const generateAnnotationId = () => {
-    return `annotation-${new Date().getTime()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
-  };
-
   const handleConceptsChange = (selectedOption) => {
     if (!concepts.find((c) => c.value === selectedOption.value)) {
       setConcepts([...concepts, selectedOption]);
@@ -123,9 +149,86 @@ function ContentAnnotator({ campaign, onReturnToCampaignOptions }) {
     setConcepts(concepts.filter((c) => c.value !== valueToRemove));
   };
 
+  const handleViewAnnotations = async () => {
+    const fetchedAnnotations = await fetchAnnotationsByCampaignId(campaign.id);
+    setAnnotations(fetchedAnnotations);
+    setShowAnnotations(true);
+  };
+
+  function AnnotationsDisplay({ annotations, onClose }) {
+    return (
+      <div className="annotations-display">
+        <button className="close-button" onClick={onClose}>
+          Close
+        </button>
+        <h2>Annotations</h2>
+        <ul className="annotations-list">
+          {annotations.map((annotation, index) => (
+            <li key={index} className="annotation-item">
+              <p>
+                <strong>Type:</strong> {annotation.annotationType}
+              </p>
+              <p>
+                <strong>Description:</strong> {annotation.description}
+              </p>
+              <p>
+                <strong>Author:</strong> {annotation.Author}
+              </p>
+              <p>
+                <strong>Date:</strong>{" "}
+                {new Date(annotation.date).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Item Annotated:</strong>
+              </p>
+              {annotation.item.type === "text" ? (
+                <p>{annotation.item.value}</p>
+              ) : (
+                <img
+                  src={annotation.item.value}
+                  alt="Annotated item"
+                  style={{ maxWidth: "100%", height: "auto" }}
+                />
+              )}
+              <p>
+                <strong>Concepts:</strong>
+              </p>
+              <ul>
+                {annotation.concepts.map((concept, idx) => (
+                  <li key={idx}>
+                    {concept.value} -{" "}
+                    <a
+                      href={concept.uri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {concept.uri}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <header className="App-header">
+        <button
+          className="view-annotations-icon"
+          onClick={handleViewAnnotations}
+        >
+          View Annotations
+        </button>
+        {showAnnotations && (
+          <AnnotationsDisplay
+            annotations={annotations}
+            onClose={() => setShowAnnotations(false)}
+          />
+        )}
         <div className="content-annotator-header">
           <button className="return-icon" onClick={onReturnToCampaignOptions}>
             ←

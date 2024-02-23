@@ -2,12 +2,12 @@
     {
       "name": "DBpedia",
       "endpoint": "https://dbpedia.org/sparql",
-      "query": "SELECT DISTINCT ?label WHERE {?s rdfs:label ?label . FILTER (langMatches(lang(?label), \"EN\") && contains(lcase(str(?label)), \"{keyword}\"))} LIMIT 10"
+      "query": "SELECT DISTINCT ?s ?label WHERE {?s rdfs:label ?label . FILTER (langMatches(lang(?label), \"EN\") && contains(lcase(str(?label)), \"{keyword}\"))} LIMIT 10"
     },
     {
       "name": "Wikidata",
       "endpoint": "https://query.wikidata.org/sparql",
-      "query": "SELECT ?item ?itemLabel WHERE { ?item ?label \"{keyword}\"@en. SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". } } LIMIT 10"
+      "query": "SELECT ?item ?itemLabel ?itemDescription WHERE { ?item ?label \"{keyword}\"@en. ?item schema:description ?itemDescription . FILTER(lang(?itemDescription) = \"en\") . SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". } } LIMIT 10"
     },
     {
       "name": "YAGO",

@@ -1,10 +1,7 @@
-// App.js
-
 import React, { useState, useEffect } from "react";
 import Configuration from "./components/Configuration";
 import CampaignOptions from "./components/CampaignOptions";
 import ContentAnnotator from "./components/ContentAnnotator";
-import { addUser } from "./Server/addDoc";
 
 function App() {
   const [username, setUsername] = useState(null);
@@ -34,20 +31,9 @@ function App() {
   }, []);
 
   const handleUsernameSubmit = (username) => {
-    const userData = {
-      username: username,
-    };
-
-    addUser(userData)
-      .then(() => {
-        console.log("User added to Firestore");
-        localStorage.setItem("username", username);
-        setUsername(username);
-        setIsConfigured(true);
-      })
-      .catch((error) => {
-        console.error("Error adding user to Firestore:", error);
-      });
+    localStorage.setItem("username", username);
+    setUsername(username);
+    setIsConfigured(true);
   };
 
   const handleCampaignSelect = (campaign) => {
@@ -58,6 +44,15 @@ function App() {
     } else {
       console.error("Attempted to select an undefined campaign");
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("username");
+    localStorage.removeItem("activeCampaign");
+    setUsername(null);
+    setIsConfigured(false);
+    setActiveCampaign(null);
+    setCurrentView("campaignOptions"); // or any default view you prefer
   };
 
   return (
@@ -77,8 +72,11 @@ function App() {
         <CampaignOptions
           setActiveCampaign={setActiveCampaign}
           onCampaignSelect={handleCampaignSelect}
+          username={username}
+          onLogout={handleLogout} // Pass handleLogout to CampaignOptions
         />
       )}
+      <div>Current Username: {username}</div>
     </div>
   );
 }

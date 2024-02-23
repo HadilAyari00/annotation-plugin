@@ -26,11 +26,21 @@ const addCampaign = async (campaignData) => {
 
 // Add a new annotation
 const addAnnotation = async (annotationData) => {
+  // Sanitize data to replace `undefined` values with a default string
+  const sanitizedData = Object.keys(annotationData).reduce((acc, key) => {
+    acc[key] =
+      annotationData[key] === undefined
+        ? "link not found"
+        : annotationData[key];
+    return acc;
+  }, {});
+
   try {
-    const docRef = await addDoc(collection(db, "annotations"), annotationData);
+    const docRef = await addDoc(collection(db, "annotations"), sanitizedData);
     console.log("Document written with ID: ", docRef.id);
   } catch (e) {
     console.error("Error adding document: ", e);
+    throw e;
   }
 };
 

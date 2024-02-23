@@ -126,3 +126,40 @@ textarea {
   font-size: 24px;
   margin-right: 20px; /* Adjust as needed */
 }
+
+.annotations-display {
+  color: black;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  max-width: 600px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.annotations-list {
+  list-style: none;
+  padding: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.annotation-item {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.close-button {
+  float: right;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 20px;
+}
