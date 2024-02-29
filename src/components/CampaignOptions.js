@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
+import { faUserPlus, faPlusCircle } from "@fortawesome/free-solid-svg-icons";
 import thesaurusData from "../data/thesaurus.json";
 import { addCampaign } from "../Server/addDoc";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -142,8 +145,12 @@ const CampaignOptions = ({
 
   const renderOptionsView = () => (
     <div className="campaign-options">
-      <button onClick={() => setView("join")}>Join Campaign</button>
-      <button onClick={() => setView("create")}>Create Campaign</button>
+      <button onClick={() => setView("join")} className="campaign-button">
+        <FontAwesomeIcon icon={faUserPlus} /> Join Campaign
+      </button>
+      <button onClick={() => setView("create")} className="campaign-button">
+        <FontAwesomeIcon icon={faPlusCircle} /> Create Campaign
+      </button>
       {renderCampaignsList()}
     </div>
   );
@@ -155,11 +162,14 @@ const CampaignOptions = ({
       </div>
       <input
         type="text"
+        className="campaign-input"
         placeholder="Enter Campaign Code"
         value={campaignCode}
         onChange={(e) => setCampaignCode(e.target.value)}
       />
-      <button onClick={handleJoinCampaign}>Join Campaign</button>
+      <button onClick={handleJoinCampaign} className="campaign-button">
+        Join Campaign
+      </button>
     </div>
   );
 
@@ -250,13 +260,16 @@ const CampaignOptions = ({
           Campaign Name:
           <input
             type="text"
+            className="campaign-input"
             placeholder="Campaign Name"
             value={campaignName}
             onChange={(e) => setCampaignName(e.target.value)}
           />
         </label>
         <label>Thesaurus:{renderThesaurusOptions()}</label>
-        <button type="submit">Create Campaign</button>
+        <button type="submit" className="campaign-button">
+          Create Campaign
+        </button>
       </form>
     </div>
   );
@@ -338,8 +351,7 @@ const CampaignOptions = ({
       {" "}
       <div style={{ position: "absolute", top: 0, left: 0 }}>
         <button onClick={handleLogout} className="logout-button">
-          {" "}
-          Logout
+          <FontAwesomeIcon icon={faSignOutAlt} /> Logout
         </button>
       </div>
       {view === "options" && renderOptionsView()}
@@ -353,6 +365,7 @@ const CampaignOptions = ({
               Email to Add:
               <input
                 type="email"
+                className="campaign-input"
                 value={emailToAdd}
                 onChange={handleEmailChange}
                 required
@@ -380,7 +393,9 @@ const CampaignOptions = ({
                 Participant
               </label>
             </div>
-            <button type="submit">Add User</button>
+            <button type="submit" className="campaign-button">
+              Add User
+            </button>
           </form>
         </Modal>
       )}

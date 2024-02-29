@@ -76,7 +76,6 @@ function App() {
           onLogout={handleLogout} // Pass handleLogout to CampaignOptions
         />
       )}
-      <div>Current Username: {username}</div>
     </div>
   );
 }

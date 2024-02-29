@@ -217,27 +217,33 @@ function ContentAnnotator({ campaign, onReturnToCampaignOptions }) {
   return (
     <div className="App">
       <header className="App-header">
-        <button
-          className="view-annotations-icon"
-          onClick={handleViewAnnotations}
-        >
-          View Annotations
-        </button>
-        {showAnnotations && (
-          <AnnotationsDisplay
-            annotations={annotations}
-            onClose={() => setShowAnnotations(false)}
-          />
-        )}
         <div className="content-annotator-header">
           <button className="return-icon" onClick={onReturnToCampaignOptions}>
             ←
           </button>
           <h1>{campaign?.name}</h1>
+          <button
+            className="view-annotations-icon"
+            onClick={handleViewAnnotations}
+          >
+            <FontAwesomeIcon icon={faEye} />
+          </button>
+          {showAnnotations && (
+            <AnnotationsDisplay
+              annotations={annotations}
+              onClose={() => setShowAnnotations(false)}
+            />
+          )}
         </div>
         <div className="selected-content">
           {item.type === "text" && <p>Selected Text: {item.value}</p>}
-          {item.type === "image" && <img src={item.value} alt="Selected" />}
+          {item.type === "image" && (
+            <img
+              src={item.value}
+              alt="Selected"
+              style={{ maxWidth: "300px", maxHeight: "300px" }} // Adjust these values as needed
+            />
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="annotation-form">

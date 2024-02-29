@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Annotator Extension",
-  "version": "0.2",
+  "name": "Annotator Plugin",
+  "version": "1.0",
   "action": {
     "default_popup": "index.html",
     "default_icon": "logo192.png"

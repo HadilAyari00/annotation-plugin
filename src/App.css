@@ -1,165 +1,164 @@
+/* Base styles */
+body,
 .App {
-  text-align: center;
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  width: 300px;
+  font-family: "Arial", sans-serif;
+  background-color: #ffffff;
+  color: #34495e;
+  margin: 0;
+  padding: 10px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
+/* Header styles */
 .App-header {
-  background-color: #282c34;
-  color: white;
+  background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
-  min-height: 100vh;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  gap: 20px;
 }
 
-.App-link {
-  color: #61dafb;
+.content-annotator-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.selected-content {
+.return-icon,
+.view-annotations-icon {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.return-icon:hover,
+.view-annotations-icon:hover {
+  background-color: #2980b9;
+}
+
+/* Form and control styles */
+.annotation-form,
+.form-control,
+textarea {
+  width: 100%;
+  border: 1px solid #dadfe1;
+  border-radius: 4px;
+  padding: 10px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.annotation-form label {
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.form-control:focus,
+textarea:focus {
+  border-color: #3498db;
+  outline: none;
+}
+
+.submit-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 20px;
+}
+
+.submit-button:hover {
+  background-color: #256997;
+}
+
+/* Annotations display */
+.annotations-display {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  width: 300px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.annotations-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.annotation-item:not(:last-child) {
   margin-bottom: 15px;
 }
 
-.form-control {
-  width: 100%;
-  padding: 8px;
-  margin: 10px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.selected-content img {
-  max-width: 100%;
-  max-height: 150px;
-  object-fit: contain;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-top: 10px;
-}
-
-.select-page-button,
-.submit-button {
-  width: 100%;
-  background-color: #4caf50;
+.close-button {
+  background-color: #575757fb;
   color: white;
-  padding: 14px 20px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 4px;
+  border: 1;
+  padding: 5px 10px;
+  border-radius: 20px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.select-page-button:hover,
-.submit-button:hover {
-  background-color: #45a049;
+.close-button:hover {
+  background-color: #c0392b;
 }
 
-textarea {
-  height: 100px;
+/* Additional styles for react-select */
+.css-2b097c-container {
+  margin: 8px 0;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.css-yk16xz-control {
+  border-radius: 4px;
 }
 
+.css-1pahdxg-control {
+  border-color: #3498db !important;
+}
+
+.css-1okebmr-indicatorSeparator {
+  display: none;
+}
+
+/* Concept tags styling */
 .selected-contexts {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 10px;
 }
 
 .selected-context {
+  background-color: #3498db;
+  color: #ffffff;
   padding: 5px 10px;
-  background-color: #406191;
-  border-radius: 20px;
-  display: flex;
+  border-radius: 15px;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .remove-context {
   cursor: pointer;
-  border: none;
-  background: transparent;
-  color: #333;
-  font-weight: bold;
-}
-
-.content-annotator-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.return-icon {
-  cursor: pointer;
   background: none;
   border: none;
-  font-size: 24px;
-  margin-right: 20px; /* Adjust as needed */
-}
-
-.annotations-display {
-  color: black;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  max-width: 600px;
-  background-color: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-}
-
-.annotations-list {
-  list-style: none;
-  padding: 0;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.annotation-item {
-  margin-bottom: 15px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-}
-
-.close-button {
-  float: right;
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-  font-size: 20px;
+  color: #ffffff;
+  font-size: 14px;
 }
